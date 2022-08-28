@@ -1,0 +1,11 @@
+Pipeline to go from raw mass spec data to curated data set for a given tissue type. We have three tissue types - heart, muscle, and brain. 
+
+1) Raw TMT abundance level data for each sample (data/'tissue-of-interest'_tmt.xlsx)
+
+2) Differential Expression analysis where a given protein's abundance is normalized to Lamin A and filtered by some quality flags 
+
+3) For each protein, we have the fold change, p-value, and gene name (that we look up using code/get_gene_names.R) (data/'tissue of interest'-diff-exp.xlsx)
+
+4) We filter out proteins that are mitochondrial, keratin, or ribosomal (data/'tissue of interest'-diff-exp.xlsx')
+
+5) Manual annotation of protein properties (data/'tissue of interest'-annotated.xlsx)
