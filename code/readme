@@ -4,10 +4,9 @@ analysis.R compute the change in protein abundance between IL-10 KO and WT mice 
 
 get_gene_names.R uses the NCBI API to turn each accession number into a gene name. It is to be run on the outputs of analysis.R sitting in temp/. Navigate to the code/ directory and run 'Rscript get_gene_names.R {sample}' where {sample} takes one of heart, muscle, or brain. It stores each query so that any NCBI API outages or rate-limiting stops does not affect the program. 
 
-venn-diagram.R computes the number of proteins jointly identified by each combination of tissues. 
+venn-diagram.R computes the number of proteins jointly identified by each combination of tissues. Navigate to the code/ directory and run 'Rscript venn-diagram.R {status}' where {status} takes one of unfiltered or filtered. It generates two files per run, one with the numbers for the venn diagram and the other with the protein names. Supplying the 'filtered' argument means that the non-MRK (mitochondrial, ribosomal, keratin) proteins are used. This script requires that the both analysis.R and get_gene_names.R are run for all three tissues. 
 
-volcano-stratification.R generates a volcano plot (log2FC vs. -log10p-value) for the differential protein abundance analysis, an interactive plotly version of this stored in results/interactive/, and a plot showing the difference in abundance between KO and WT for each identified protein. Navigate to the code/ directory and run 'Rscript volcano-stratification.R {sample}' where {sample} takes one of heart, muscle, or brain. It stores each query so that any NCBI API outages or rate-limiting stops does not affect the program.
-
+volcano-stratification.R generates a volcano plot (log2FC vs. -log10p-value) for the differential protein abundance analysis, an interactive plotly version of this stored in results/interactive/, and a plot showing the difference in abundance between KO and WT for each identified protein. Navigate to the code/ directory and run 'Rscript volcano-stratification.R {sample}' where {sample} takes one of heart, muscle, or brain. It stores each query so that any NCBI API outages or rate-limiting stops does not affect the program. This script requires that the both analysis.R and get_gene_names.R are run for the tissue of interest. 
 
 weight-analysis.R analyzes the weights of the different organs in the sacrificed organisms and generates a figure describing these weights. 
 
