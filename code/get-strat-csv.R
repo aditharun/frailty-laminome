@@ -24,9 +24,9 @@ df.unfiltered <- files.unfiltered[grepl(sample, files.unfiltered)] %>% read_exce
 
 dat <- df.unfiltered %>% rename(pval=`p-value`) %>% mutate(type=ifelse(grepl("ribosomal|keratin|mitochondri", Protein), "mitochondrial/ribosomal/keratin\n(MRK)", "not MRK")) %>% mutate(diff=komean-wtmean) %>% group_by(type) %>% mutate(index=1:n()) %>% ungroup()
 
-res <- dat %>% select(Protein, diff, log2.foldchange, pval, komean, wtmean, type, sign) %>% arrange(desc(abs(diff)))
+res <- dat %>% select(Protein, diff, log2.foldchange, pval, komean, wtmean, type, sign) %>% arrange(desc(abs(diff))) %>% filter(abs(diff) >= 1)
 
-pathtofile <- file.path("../results", paste0("strat-", sample, ".xlsx"))
+pathtofile <- file.path("../results", paste0("deviant-strat-", sample, ".xlsx"))
 
 write_xlsx(res, path=pathtofile)
 
