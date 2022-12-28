@@ -108,9 +108,6 @@ if (!dir.exists(interactive.dir)){
 interactive_filename <- paste0(interactive.dir, "/", sample, "-interactive-volc-strat")
 htmlwidgets::saveWidget(as_widget(p.interactive), paste0(interactive_filename, ".html"), selfcontained=FALSE)
 
-system(paste0('rm -r ', interactive_filename, '_files'))
-
-
 #connections plot
 
 c.dir <- "../temp"
