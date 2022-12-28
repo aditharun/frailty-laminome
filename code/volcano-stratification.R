@@ -6,12 +6,14 @@ library(tidyverse)
 library(readxl)
 library(ggvenn)
 library(cowplot)
+library(plotly)
+
 
 dir <- "../results"
 
 sample <- args[1] %>% tolower()
 
-heart <- read_excel(file.path(dir, "heart-analysis.xlsx"))
+analysis <- read_excel(file.path(dir, paste0(sample, "-analysis.xlsx")))
 
 
 color <- function(x){
@@ -20,7 +22,7 @@ color <- function(x){
   x
 }
 
-heart <- color(heart)
+analysis <- color(analysis)
 
 
 
@@ -71,15 +73,26 @@ plot_volcano <- function(x, sample, show_legend){
 
 }
 
-p <- plot_volcano(heart, "Differentially Expressed Proteins\n in Heart Tissue", TRUE)
+if (sample=="muscle"){
+    sample_label <- "Skeletal Muscle"
+} 
 
-xlims <- heart$log2.foldchange %>% quantile(c(0.05, 0.95)) %>% unname()
+if (sample == "brain"){
+    sample_label <- "Brain"
+}
+
+if (sample=="heart"){
+    sample_label <- "Heart"
+}
+
+p <- plot_volcano(analysis, paste0("Differentially Expressed Proteins\n in ", sample_label, " Tissue"), TRUE)
+
+xlims <- analysis$log2.foldchange %>% quantile(c(0.05, 0.95)) %>% unname()
 cbbPalette <- c("#E69F00", "#000000", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-library(plotly)
 
 p.interactive <- plot_ly(
-  heart, x = ~log2.foldchange, y = ~-log10( `p-value`),
+  analysis, x = ~log2.foldchange, y = ~-log10( `p-value`),
   # Hover text:
   text = ~paste0(toupper(gene_names), "\n", Protein),
   color = ~expression, colors=c("orange", "blue")) %>% layout(title=sample, yaxis=list(title="-log10(p-value)"), xaxis=list(title="Log2 Fold Change (KO/WT)", range=xlims) )
@@ -92,8 +105,11 @@ if (!dir.exists(interactive.dir)){
 
 }
 
+interactive_filename <- paste0(interactive.dir, "/", sample, "-interactive-volc-strat")
+htmlwidgets::saveWidget(as_widget(p.interactive), paste0(interactive_filename, ".html"), selfcontained=FALSE)
 
-htmlwidgets::saveWidget(p.interactive, paste0(interactive.dir, "/", sample, "-interactive-volcano.html"))
+system(paste0('rm -r ', interactive_filename, '_files'))
+
 
 #connections plot
 
