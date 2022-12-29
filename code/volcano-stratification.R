@@ -62,7 +62,7 @@ plot_volcano <- function(x, sample, show_legend){
     panel.background = element_rect(fill = "transparent"), # bg of the panel
     plot.background = element_rect(fill = "transparent", color = NA), # bg of the plot
     panel.grid.major = element_blank(), # get rid of major grid
-    panel.grid.minor = element_blank(), # get rid of minor grid
+    panel.grid.minor = element_blank() # get rid of minor grid
   ) + theme(
   axis.title.x = element_text(size = textsize),
   axis.text.x = element_text(size = textsize-1),
@@ -89,24 +89,6 @@ p <- plot_volcano(analysis, paste0("Differentially Expressed Proteins\n in ", sa
 
 xlims <- analysis$log2.foldchange %>% quantile(c(0.05, 0.95)) %>% unname()
 cbbPalette <- c("#E69F00", "#000000", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
-
-p.interactive <- plot_ly(
-  analysis, x = ~log2.foldchange, y = ~-log10( `p-value`),
-  # Hover text:
-  text = ~paste0(toupper(gene_names), "\n", Protein),
-  color = ~expression, colors=c("orange", "blue")) %>% layout(title=sample, yaxis=list(title="-log10(p-value)"), xaxis=list(title="Log2 Fold Change (KO/WT)", range=xlims) )
-
-interactive.dir <- "../results/interactive"
-
-if (!dir.exists(interactive.dir)){
-
-  dir.create(interactive.dir)
-
-}
-
-interactive_filename <- paste0(interactive.dir, "/", sample, "-interactive-volc-strat")
-htmlwidgets::saveWidget(as_widget(p.interactive), paste0(interactive_filename, ".html"), selfcontained=FALSE)
 
 #connections plot
 
@@ -157,28 +139,6 @@ pgrid <- plot_grid(p, treatment_effect, nrow=1, labels=c("A", "B"), label_size=2
 
 
 ggsave(filename=paste0("../figs/", sample, "-volc-strat.pdf"), plot=pgrid, units="in", height=9 , width=17)
-
-
-
-#interactive plot-ly plot
-
-#dat2 <- dat %>% mutate(short.name=gsub(";.*", "", Protein)) 
-
-#library(plotly)
-
-#plotly.heart.treatmenteffect <- left_join(dat2, dat, by=c("Protein"="Protein", "log2.foldchange"="log2.foldchange"))
-
-#fig.heart <- plot_ly(
-  #plotly.heart.treatmenteffect, x = ~index, y = ~diff,
-  # Hover text:
-  #text = ~paste0(toupper(gene_names), "\n", short.name),
-  #color = ~filter.out, colors=cbbPalette[c(4,7)]) %>% layout(title="Heart", yaxis=list(title="Average KO Abundance - Average WT Abundance"), xaxis=list(title="Protein Index"))
-
-  #htmlwidgets::saveWidget(as_widget(fig.heart), "heart-treatment-effect.html")
-  #htmlwidgets::saveWidget(as_widget(fig.muscle), "muscle-treatment-effect.html")
-
-
-
 
 
 
