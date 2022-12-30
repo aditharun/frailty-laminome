@@ -4,8 +4,6 @@ args = commandArgs(trailingOnly=TRUE)
 #volcano plots per tissue
 library(tidyverse)
 library(readxl)
-library(ggvenn)
-library(cowplot)
 library(plotly)
 
 
@@ -27,13 +25,11 @@ analysis <- color(analysis)
 
 
 
-plot_volcano <- function(x, sample, show_legend){
-
-	textsize <- 15
-	titlesize <- 18
 
 
-  cbbPalette <- c("#E69F00", "#000000", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+plot_volcano <- function(x, sample, show_legend, axistitlesize, axistextsize, titlesize, legendsize){
+
+
 
 	if (show_legend){
 		leg <- "bottom"
@@ -41,17 +37,25 @@ plot_volcano <- function(x, sample, show_legend){
 		leg <- "none"
 	}
 
+
+
   xlims <- x$log2.foldchange %>% quantile(c(0.05, 0.95)) %>% unname() %>% round()
+    xlims_mod <- xlims + c(-0.15, 0.15)
+
+    if (grepl("heart", tolower(sample))){
+        custom_breaks <- seq(round(xlims[1]), round(xlims[2]), 0.5)
+    } else{
+        custom_breaks <- seq(round(xlims[1]), round(xlims[2]), 1)
+    }
 
 	ggplot(data = x,
        aes(x = log2.foldchange,
            y = -log10(`p-value`),
            colour=expression)) +
     geom_point(alpha=0.4, size=3.5) +
-    scale_color_manual(values=c("orange", "blue"))+
-    xlim(xlims) +
-    geom_vline(xintercept=c(-.05,.05),lty=2,col="grey70",lwd=0.3) +
-    geom_hline(yintercept = 1.301,lty=4,col="grey70",lwd=0.3) +
+    scale_color_manual(values=c("blue", "black"))+
+    geom_vline(xintercept=c(-.05,.05),lty=2,col="grey25",lwd=0.5) +
+    geom_hline(yintercept = 1.301,lty=4,col="grey25",lwd=0.5) +
     xlab("log2 fold change (KO/WT)")+
          ylab("-log10 p-value")+
          ggtitle(sample) +
@@ -64,12 +68,11 @@ plot_volcano <- function(x, sample, show_legend){
     panel.grid.major = element_blank(), # get rid of major grid
     panel.grid.minor = element_blank() # get rid of minor grid
   ) + theme(
-  axis.title.x = element_text(size = textsize),
-  axis.text.x = element_text(size = textsize-1),
-  axis.title.y = element_text(size = textsize),
-  axis.text.y= element_text(size=textsize-1),
-  legend.text = element_text(size=textsize-1)
-  )
+  axis.title.x = element_text(size = axistitlesize),
+  axis.text.x = element_text(size = axistextsize),
+  axis.title.y = element_text(size = axistitlesize),
+  axis.text.y= element_text(size=axistextsize),
+  legend.text = element_text(size=legendsize), panel.border = element_rect(colour = "black", fill=NA, size=1.5)) + scale_x_continuous(breaks=custom_breaks, limits=xlims_mod)
 
 }
 
@@ -85,10 +88,15 @@ if (sample=="heart"){
     sample_label <- "Heart"
 }
 
-p <- plot_volcano(analysis, paste0("Differentially Expressed Proteins\n in ", sample_label, " Tissue"), TRUE)
 
-xlims <- analysis$log2.foldchange %>% quantile(c(0.05, 0.95)) %>% unname()
-cbbPalette <- c("#E69F00", "#000000", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+axistextsize <- 18
+axistitlesize <- 22
+titlesize <- 25
+legendsize <- 20
+stripsize <- 22
+
+p <- plot_volcano(analysis, paste0("Filtered lamin A/C-associated\nproteins in IL10tm-vs-WT ", sample_label), TRUE, axistitlesize, axistextsize, titlesize, legendsize)
+
 
 #connections plot
 
@@ -105,40 +113,34 @@ df.unfiltered <- files.unfiltered[grepl(sample, files.unfiltered)] %>% read_exce
 
 dat <- df.unfiltered %>% rename(pval=`p-value`) %>% mutate(type=ifelse(grepl("ribosomal|keratin|mitochondri", Protein), "mitochondrial/ribosomal/keratin\n(MRK)", "not MRK")) %>% mutate(diff=komean-wtmean) %>% group_by(type) %>% mutate(index=1:n()) %>% ungroup()
 
-
-textsize <- 16
-titlesize <- 18
-
 #comparison of treatment groups, frail and normal. Difference plot better than the foster one because shows jsut how many proteins had no real difference
 #one conclusion is that things that may have no difference are still associating differently
 
 
-colorscales <- cbbPalette[c(3,4)]
+colorscales <- c("black", "orange3")
 
 
 treatment_effect <- ggplot(dat, aes(x=index, y=diff, color=type)) + geom_point() +   geom_hline(yintercept = 0,col="black",lwd=0.8) + facet_wrap(~type, scale="free") + xlab("Protein Index") + ylab("Average KO Abundance -\n Average WT Abundance") + scale_color_manual(values=colorscales) + theme_bw()+
              theme(plot.title = element_text(hjust = 0.5, size=titlesize),
-                   legend.position="bottom",
+                   legend.position="none",
                    legend.title = element_blank()) +   theme(
     panel.background = element_rect(fill = "transparent"), # bg of the panel
     plot.background = element_rect(fill = "transparent", color = NA), # bg of the plot
     panel.grid.major = element_blank(), # get rid of major grid
     panel.grid.minor = element_blank(), # get rid of minor grid
   ) + theme(
-  axis.title.x = element_text(size = textsize),
-  axis.text.x = element_text(size = textsize-1),
-  axis.title.y = element_text(size = textsize),
-  axis.text.y= element_text(size=textsize-1),
-  legend.text = element_text(size=textsize-1), strip.text = element_text(size=textsize)
+  axis.title.x = element_text(size = axistitlesize),
+  axis.text.x = element_text(size = axistextsize),
+  axis.title.y = element_text(size = axistitlesize),
+  axis.text.y= element_text(size=axistextsize),
+  legend.text = element_text(size=legendsize), strip.text = element_text(size=stripsize), panel.border = element_rect(colour = "black", fill=NA, size=1.5)
+
   )
 
 
-library(cowplot)
+ggsave(filename=paste0("../figs/", sample, "-volcano.pdf"), plot=p, device=cairo_pdf, units="in", height=9, width=9.5)
 
-pgrid <- plot_grid(p, treatment_effect, nrow=1, labels=c("A", "B"), label_size=25) 
-
-
-ggsave(filename=paste0("../figs/", sample, "-volc-strat.pdf"), plot=pgrid, units="in", height=9 , width=17)
+ggsave(filename=paste0("../figs/", sample, "-strata.pdf"), plot=treatment_effect, device=cairo_pdf, units="in", height=9, width=11)
 
 
 
